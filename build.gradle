@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'checkstyle'
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+def versions = [
+  checkstyle: '8.2',
+]
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  checkstyleConfig
+}
+
+dependencies {
+  compileOnly('org.projectlombok:lombok:1.16.18')
+  compile('com.google.guava:guava:23.3-jre')
+  testCompile('junit:junit:4.12')
+}
+
+checkstyle {
+  config = resources.text.fromArchiveEntry(configurations.checkstyleConfig, 'google_checks.xml')
+  toolVersion = "${versions.checkstyle}"
+  showViolations = true
+  maxWarnings = 0
+}
+
+task wrapper(type: Wrapper) { gradleVersion = '4.1' }
