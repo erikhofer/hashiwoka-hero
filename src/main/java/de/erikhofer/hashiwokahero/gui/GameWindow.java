@@ -1,18 +1,26 @@
 package de.erikhofer.hashiwokahero.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class GameWindow extends JFrame implements GameEngine.MainLoop {
+public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseListener, MouseMotionListener {
 
   private static final long serialVersionUID = 1L;
+  
+  private static final int TILE_SIZE = 96;
+  private static final int TILE_PADDING = 16;
+  private static final int TILE_INNER_SIZE = TILE_SIZE - 2 * TILE_PADDING;
   
   public static void main(String[] args) {
     new GameWindow();
@@ -20,6 +28,10 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop {
   
   private JPanel canvas;
   private GameEngine gameEngine;
+  private GameState gameState;
+  private int boardWidth = 3;
+  private int boardHeight = 3;
+  private TilePosition selectedTilePostion;
   
   /**
    * Creates a new game window.
@@ -30,20 +42,27 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop {
     addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing(WindowEvent e) {
-        
+        System.exit(0);
       }
     });
     setResizable(false);
     setLayout(new BorderLayout());
     
+    gameState = new GameState();
+    
+    final int canvasWidth = boardWidth * TILE_SIZE;
+    final int canvasHeight = boardHeight * TILE_SIZE;
+    
     //set up canvas
     canvas = new JPanel();
-    canvas.setPreferredSize(new Dimension(800, 600));
+    canvas.setPreferredSize(new Dimension(canvasWidth, canvasHeight));
     canvas.setDoubleBuffered(false); // we do our own double buffering
+    canvas.addMouseListener(this);
+    canvas.addMouseMotionListener(this);
     add(canvas, BorderLayout.CENTER);
     
     gameEngine = new GameEngine(this);
-    gameEngine.setBufferSize(800, 600);
+    gameEngine.setBufferSize(canvasWidth, canvasHeight);
     gameEngine.start();
     
     pack();
@@ -53,12 +72,106 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop {
 
   @Override
   public void update(long period) {
-    
+    // this game doesn't have any time-based updates
   }
 
   @Override
   public void render(Graphics g) {
+    for (int row = 0; row < boardHeight; row++) {
+      for (int col = 0; col < boardWidth; col++) {
+        
+        TilePosition tilePosition = new TilePosition(row, col);
+        final Point origin = new Point(col * TILE_SIZE, row * TILE_SIZE);
+        
+        if (isComponentTile(tilePosition)) {
+          renderComponentTile(tilePosition, g, origin);
+        } else if (isCableTile(tilePosition)) {
+          renderCableTile(tilePosition, g, origin);
+        } else {
+          throw new RuntimeException("Unknown tile type");
+        }
+      }
+    }
+  }
+  
+  private void renderComponentTile(TilePosition tilePosition, Graphics g, Point origin) {
+    ComponentTile componentTile = getTileAtPosition(tilePosition);
     
+    Image image = Resources.COMPONENTS[componentTile.getConnections()][componentTile.getVariant()];
+    g.drawImage(image, origin.x + TILE_PADDING, origin.y + TILE_PADDING, null);
+    
+    // connections
+    for (Direction direction : Direction.values()) {
+      TilePosition adjacentTilePosition = tilePosition.getAdjacent(direction);
+      
+      if (adjacentTilePosition.getRow() == -1
+          || adjacentTilePosition.getCol() == -1
+          || adjacentTilePosition.getRow() == boardHeight
+          || adjacentTilePosition.getCol() == boardWidth) {
+        continue; // there is no adjacent tile in this direction
+      }
+      
+      // components can't be next to each other
+      CableTile cableTile = getTileAtPosition(adjacentTilePosition);
+      
+      int connectionCount = direction.getOrientation() == cableTile.getOrientation()
+          ? cableTile.getCables() : 0;
+      
+      for (int i = 1; i <= 2; i++) {
+        Point connectionOrigin = getConnectionOrigin(origin, direction, i == 2);
+        Image connectionImage = connectionCount >= i 
+            ? Resources.CONNECTIONS.get(direction)[cableTile.getVariant()] 
+            : Resources.HOLES.get(direction.getOrientation());
+        g.drawImage(connectionImage, connectionOrigin.x, connectionOrigin.y, null);
+      }
+    }
+    
+    if (tilePosition.equals(selectedTilePostion)) {
+      g.setColor(Color.GREEN);
+      g.fillRect(origin.x + TILE_PADDING, origin.y + TILE_PADDING, 10, 10);
+    }
+  }
+  
+  private Point getConnectionOrigin(Point tileOrigin, Direction direction, boolean second) {
+    Point connectionOrigin = new Point(tileOrigin);
+    if (direction.getOrientation() == Orientation.VERTICAL) {
+      connectionOrigin.x += second ? TILE_SIZE / 2 : TILE_PADDING;
+      connectionOrigin.y += direction == Direction.NORTH ? 0 : (TILE_SIZE - TILE_PADDING);
+    } else {
+      connectionOrigin.y += second ? TILE_SIZE / 2 : TILE_PADDING;
+      connectionOrigin.x += direction == Direction.WEST ? 0 : (TILE_SIZE - TILE_PADDING);
+    }
+    return connectionOrigin;
+  }
+  
+  private void renderCableTile(TilePosition tilePosition, Graphics g, Point origin) {
+    CableTile cableTile = getTileAtPosition(tilePosition);
+    
+    for (int i = 0; i < cableTile.getCables(); i++) {
+      boolean second = i == 1;
+      Point originWithOffset = new Point(origin);
+      if (cableTile.getOrientation() == Orientation.HORIZONTAL) {
+        originWithOffset.y += second ? TILE_SIZE / 2 : TILE_PADDING;
+      } else {
+        originWithOffset.x += second ? TILE_SIZE / 2 : TILE_PADDING;
+      }
+      
+      Image image = Resources.CABELS.get(cableTile.getOrientation())[cableTile.getVariant()];
+      g.drawImage(image, originWithOffset.x, originWithOffset.y, null);
+    }
+  }
+  
+  private boolean isComponentTile(TilePosition tilePosition) {
+    return getTileAtPosition(tilePosition) instanceof ComponentTile;
+  }
+  
+  private boolean isCableTile(TilePosition tilePosition) {
+    return getTileAtPosition(tilePosition) instanceof CableTile;
+  }
+  
+  @SuppressWarnings("unchecked")
+  private <T extends Tile> T getTileAtPosition(TilePosition tilePosition) {
+    return (T) gameState.getBoard()[tilePosition.getRow()][tilePosition.getCol()];
   }
 
   @Override
@@ -81,6 +194,48 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop {
   public void dispose() {
     super.dispose();
     gameEngine.stop();
+  }
+  
+  private TilePosition getTilePosition(MouseEvent e) {
+    return new TilePosition(e.getY() / TILE_SIZE, e.getX() / TILE_SIZE);
+  }
+
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    System.out.println("Clicked " + e.getPoint());
+    
+    TilePosition tilePosition = getTilePosition(e);
+    if (tilePosition.equals(selectedTilePostion)) {
+      selectedTilePostion = null;
+    } else {
+      selectedTilePostion = tilePosition;
+    }
+  }
+
+  @Override
+  public void mousePressed(MouseEvent e) {
+    System.out.println("Pressed " + e.getPoint());
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    System.out.println("Released" + e.getPoint());
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent e) {}
+
+  @Override
+  public void mouseExited(MouseEvent e) {}
+
+  @Override
+  public void mouseDragged(MouseEvent e) {
+    System.out.println("Dragged " + e.getPoint());
+  }
+
+  @Override
+  public void mouseMoved(MouseEvent e) {
+    System.out.println("Moved " + e.getPoint());
   }
 
 }

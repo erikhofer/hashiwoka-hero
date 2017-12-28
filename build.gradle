@@ -30,4 +30,16 @@ checkstyle {
   maxWarnings = 0
 }
 
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+  manifest {
+    attributes 'Implementation-Title': 'Hashiwoka Hero',
+               'Implementation-Version': version,
+               'Main-Class': 'de.erikhofer.hashiwokahero.gui.GameWindow'
+  }
+  baseName = project.name + '-all'
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  with jar
+}
+
 task wrapper(type: Wrapper) { gradleVersion = '4.1' }
