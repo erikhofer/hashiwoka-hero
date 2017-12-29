@@ -41,6 +41,9 @@ public class BoardGenerator {
   public Tile[][] generateBoard(int components) {
     checkArgument(components >= 2, "There must be at least 2 components on a board!");
     
+    // The algorithm is based on this paper:
+    // http://liacs.leidenuniv.nl/assets/Bachelorscripties/2009-11TimoMorsink.pdf
+    
     // We don't know the size of the board yet. Thus we allow arbitrary size in all directions (also
     // negative) and transform to a two-dimensional array at the end.
     final Map<TilePosition, Tile> board = new HashMap<>();
