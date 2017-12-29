@@ -27,4 +27,21 @@ public class TilePosition {
     }
   }
   
+  /**
+   * Returns the direction this position lies in relative to the given position or null if both
+   * positions are the same or don't share a row nor a column.
+   */
+  public Direction getDirectionRelativeTo(@NonNull TilePosition other) {
+    if (equals(other)) {
+      return null;
+    }
+    if (col == other.col) {
+      return row < other.row ? Direction.NORTH : Direction.SOUTH;
+    }
+    if (row == other.row) {
+      return col < other.col ? Direction.WEST : Direction.EAST;
+    }
+    return null;
+  }
+  
 }

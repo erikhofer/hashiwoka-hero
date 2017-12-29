@@ -18,5 +18,23 @@ public class CableTile extends Tile {
     checkArgument(cables >= 0 && cables <= 2);
     this.cables = cables;
   }
+  
+  /**
+   * Removes one cable from this tile if possible.
+   */
+  public void decreaseCables() {
+    if (cables != 0) {
+      cables--;
+    }
+  }
+  
+  /**
+   * Adds one cable to this tile if possible.
+   */
+  public void increaseCables() {
+    if (cables != 2) {
+      cables++;
+    }
+  }
 
 }

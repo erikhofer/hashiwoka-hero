@@ -39,7 +39,7 @@ public class Resources {
   /**
    * Image resources for cable tiles. Dimension 1 = variant.
    */
-  public static final ImmutableMap<Orientation, Image[]> CABELS = ImmutableMap.of(
+  public static final ImmutableMap<Orientation, Image[]> CABLES = ImmutableMap.of(
       Orientation.HORIZONTAL, new Image[] { loadImage("cable-h.png") },
       Orientation.VERTICAL, new Image[] { loadImage("cable-v.png") }
   );
