@@ -1,4 +1,4 @@
-package de.erikhofer.hashiwokahero.gui;
+package de.erikhofer.hashiwokahero;
 
 import com.google.common.collect.ImmutableList;
 import java.awt.BorderLayout;
@@ -32,8 +32,6 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   private JPanel canvas;
   private GameEngine gameEngine;
   private GameState gameState;
-  private int boardWidth = 3;
-  private int boardHeight = 3;
   private TilePosition selectedComponentPostion;
   
   /**
@@ -53,8 +51,8 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     
     gameState = new GameState();
     
-    final int canvasWidth = boardWidth * TILE_SIZE;
-    final int canvasHeight = boardHeight * TILE_SIZE;
+    final int canvasWidth = gameState.getBoardWidth() * TILE_SIZE;
+    final int canvasHeight = gameState.getBoardHeight() * TILE_SIZE;
     
     //set up canvas
     canvas = new JPanel();
@@ -82,8 +80,8 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   public void render(Graphics g) {
     g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight()); // clear
     
-    for (int row = 0; row < boardHeight; row++) {
-      for (int col = 0; col < boardWidth; col++) {
+    for (int row = 0; row < gameState.getBoardHeight(); row++) {
+      for (int col = 0; col < gameState.getBoardWidth(); col++) {
         
         TilePosition tilePosition = new TilePosition(row, col);
         final Point origin = new Point(col * TILE_SIZE, row * TILE_SIZE);
@@ -111,8 +109,8 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
       
       if (adjacentTilePosition.getRow() == -1
           || adjacentTilePosition.getCol() == -1
-          || adjacentTilePosition.getRow() == boardHeight
-          || adjacentTilePosition.getCol() == boardWidth) {
+          || adjacentTilePosition.getRow() == gameState.getBoardHeight()
+          || adjacentTilePosition.getCol() == gameState.getBoardWidth()) {
         continue; // there is no adjacent tile in this direction
       }
       
@@ -135,6 +133,9 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
       g.setColor(Color.GREEN);
       g.fillRect(origin.x + TILE_PADDING, origin.y + TILE_PADDING, 10, 10);
     }
+    
+    g.setColor(Color.RED);
+    g.drawString(""+componentTile.getConnections(), origin.x + TILE_PADDING + 15, origin.y + TILE_PADDING + 10);
   }
   
   private Point getConnectionOrigin(Point tileOrigin, Direction direction, boolean second) {
@@ -228,7 +229,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     TilePosition current = start;
     while (true) {
       builder.add(getTileAtPosition(current));
-      final TilePosition next = start.getAdjacent(directions.get(1));
+      final TilePosition next = current.getAdjacent(directions.get(1));
       if (!isCableTile(next)) { // this can't be out of bounds
         break;
       }

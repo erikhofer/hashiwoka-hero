@@ -1,4 +1,4 @@
-package de.erikhofer.hashiwokahero.gui;
+package de.erikhofer.hashiwokahero;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -13,6 +13,13 @@ public class CableTile extends Tile {
   
   @Getter
   private int cables;
+  
+  public CableTile() {}
+  
+  public CableTile(int cables, Orientation orientation) {
+    setCables(cables);
+    setOrientation(orientation);
+  }
   
   public void setCables(int cables) {
     checkArgument(cables >= 0 && cables <= 2);

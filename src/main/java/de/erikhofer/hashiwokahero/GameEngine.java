@@ -1,4 +1,4 @@
-package de.erikhofer.hashiwokahero.gui;
+package de.erikhofer.hashiwokahero;
 
 import java.awt.Graphics;
 import java.awt.Image;

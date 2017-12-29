@@ -1,4 +1,4 @@
-package de.erikhofer.hashiwokahero.gui;
+package de.erikhofer.hashiwokahero;
 
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;

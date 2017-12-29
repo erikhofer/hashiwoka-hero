@@ -1,4 +1,4 @@
-package de.erikhofer.hashiwokahero.gui;
+package de.erikhofer.hashiwokahero;
 
 import com.google.common.collect.ImmutableMap;
 import java.awt.Image;
@@ -15,6 +15,12 @@ public class Resources {
   public static final Image[][] COMPONENTS = new Image[][] {
     {}, // there is no component with 0 connections
     { loadImage("1.png") },
+    { loadImage("2.png") },
+    { loadImage("2.png") },
+    { loadImage("2.png") },
+    { loadImage("2.png") },
+    { loadImage("2.png") },
+    { loadImage("2.png") },
     { loadImage("2.png") }
   };
   
