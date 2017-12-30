@@ -9,4 +9,9 @@ public abstract class Tile {
   @Setter
   private int variant;
   
+  protected Tile() {}
+  
+  protected Tile(Tile tile) {
+    variant = tile.variant;
+  }
 }

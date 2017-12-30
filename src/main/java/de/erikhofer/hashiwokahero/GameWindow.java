@@ -24,6 +24,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   private static final int TILE_SIZE = 96;
   private static final int TILE_PADDING = 16;
   private static final int TILE_INNER_SIZE = TILE_SIZE - 2 * TILE_PADDING;
+  private static final Color BACKGROUND_COLOR = new Color(62, 75, 48);
   
   public static void main(String[] args) {
     new GameWindow();
@@ -49,7 +50,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     setResizable(false);
     setLayout(new BorderLayout());
     
-    gameState = new GameState();
+    gameState = new GameState(10);
     
     final int canvasWidth = gameState.getBoardWidth() * TILE_SIZE;
     final int canvasHeight = gameState.getBoardHeight() * TILE_SIZE;
@@ -78,6 +79,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
 
   @Override
   public void render(Graphics g) {
+    g.setColor(BACKGROUND_COLOR);
     g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight()); // clear
     
     for (int row = 0; row < gameState.getBoardHeight(); row++) {
@@ -101,7 +103,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     ComponentTile componentTile = getTileAtPosition(tilePosition);
     
     Image image = Resources.COMPONENTS[componentTile.getConnections()][componentTile.getVariant()];
-    g.drawImage(image, origin.x + TILE_PADDING, origin.y + TILE_PADDING, null);
+    g.drawImage(image, origin.x + TILE_PADDING, origin.y + TILE_PADDING, this);
     
     // connections
     for (Direction direction : Direction.values()) {
@@ -125,7 +127,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
         Image connectionImage = connectionCount >= i 
             ? Resources.CONNECTIONS.get(direction)[cableTile.getVariant()] 
             : Resources.HOLES.get(direction.getOrientation());
-        g.drawImage(connectionImage, connectionOrigin.x, connectionOrigin.y, null);
+        g.drawImage(connectionImage, connectionOrigin.x, connectionOrigin.y, this);
       }
     }
     
@@ -163,7 +165,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
       }
       
       Image image = Resources.CABLES.get(cableTile.getOrientation())[cableTile.getVariant()];
-      g.drawImage(image, originWithOffset.x, originWithOffset.y, null);
+      g.drawImage(image, originWithOffset.x, originWithOffset.y, this);
     }
   }
   
@@ -187,7 +189,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     try {
       g = canvas.getGraphics();
       if (g != null) {
-        g.drawImage(buffer, 0, 0, null);
+        g.drawImage(buffer, 0, 0, this);
       }
     } finally {
       if (g != null) {

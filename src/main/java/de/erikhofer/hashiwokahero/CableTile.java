@@ -21,6 +21,15 @@ public class CableTile extends Tile {
     setOrientation(orientation);
   }
   
+  /**
+   * Creates a copy of the given cable tile.
+   */
+  public CableTile(CableTile cableTile) {
+    super(cableTile);
+    cables = cableTile.cables;
+    orientation = cableTile.orientation;
+  }
+  
   public void setCables(int cables) {
     checkArgument(cables >= 0 && cables <= 2);
     this.cables = cables;
@@ -30,7 +39,7 @@ public class CableTile extends Tile {
    * Removes one cable from this tile if possible.
    */
   public void decreaseCables() {
-    if (cables != 0) {
+    if (cables > 0) {
       cables--;
     }
   }
@@ -39,7 +48,7 @@ public class CableTile extends Tile {
    * Adds one cable to this tile if possible.
    */
   public void increaseCables() {
-    if (cables != 2) {
+    if (cables < 2) {
       cables++;
     }
   }

@@ -15,10 +15,9 @@ import lombok.Getter;
 
 public class BoardGenerator {
   
-  private static final double CONTINUE_CABLE_PROBABILITY = 0.5;
+  private static final double CONTINUE_CABLE_PROBABILITY = 0.3;
   
-  @Getter
-  private final long seed;
+  private final @Getter long seed;
   private final Random random;
   
   /**
