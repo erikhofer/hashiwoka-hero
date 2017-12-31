@@ -13,12 +13,10 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseListener,
@@ -35,6 +33,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   private GameEngine gameEngine;
   private GameState gameState;
   private TilePosition selectedComponentPostion;
+  private boolean displayVerificationResult;
   
   /**
    * Creates a new game window.
@@ -68,6 +67,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     JPanel controlPanel = new JPanel();
     controlPanel.setLayout(new GridLayout(1, 2));
     JButton verifySolutionButton = new JButton("Verify Solution");
+    verifySolutionButton.addActionListener(e -> verifySolution());
     controlPanel.add(verifySolutionButton);
     JButton showSolutionButton = new JButton("Show Solution");
     showSolutionButton.addActionListener(e -> gameState.setBoardToSolution());
@@ -94,9 +94,9 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
         TilePosition tilePosition = new TilePosition(row, col);
         final Point origin = new Point(col * TILE_SIZE, row * TILE_SIZE);
         
-        if (isComponentTile(tilePosition)) {
+        if (gameState.isComponentTile(tilePosition)) {
           renderComponentTile(tilePosition, g, origin);
-        } else if (isCableTile(tilePosition)) {
+        } else if (gameState.isCableTile(tilePosition)) {
           renderCableTile(tilePosition, g, origin);
         } else {
           throw new RuntimeException("Unknown tile type");
@@ -106,7 +106,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   }
   
   private void renderComponentTile(TilePosition tilePosition, Graphics g, Point origin) {
-    ComponentTile componentTile = getTileAtPosition(tilePosition);
+    ComponentTile componentTile = gameState.getTileAtPosition(tilePosition);
     
     Image image = Resources.COMPONENTS[componentTile.getConnections()][componentTile.getVariant()];
     g.drawImage(image, origin.x + TILE_PADDING, origin.y + TILE_PADDING, this);
@@ -115,15 +115,12 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     for (Direction direction : Direction.values()) {
       TilePosition adjacentTilePosition = tilePosition.getAdjacent(direction);
       
-      if (adjacentTilePosition.getRow() == -1
-          || adjacentTilePosition.getCol() == -1
-          || adjacentTilePosition.getRow() == gameState.getBoardHeight()
-          || adjacentTilePosition.getCol() == gameState.getBoardWidth()) {
+      if (gameState.isOutOfBoardBounds(adjacentTilePosition)) {
         continue; // there is no adjacent tile in this direction
       }
       
       // components can't be next to each other
-      CableTile cableTile = getTileAtPosition(adjacentTilePosition);
+      CableTile cableTile = gameState.getTileAtPosition(adjacentTilePosition);
       
       int connectionCount = direction.getOrientation() == cableTile.getOrientation()
           ? cableTile.getCables() : 0;
@@ -144,7 +141,8 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     
     g.setColor(Color.WHITE);
     g.fillOval(origin.x + TILE_PADDING + 2, origin.y + TILE_PADDING + 2, 15, 15);
-    g.setColor(Color.black);
+    g.setColor(displayVerificationResult && !componentTile.isCorrectlyConnected() 
+        ? Color.RED : Color.BLACK);
     g.setFont(DIGIT_FONT);
     g.drawString("" + componentTile.getConnections(), origin.x + TILE_PADDING + 5, 
         origin.y + TILE_PADDING + 15);
@@ -163,7 +161,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   }
   
   private void renderCableTile(TilePosition tilePosition, Graphics g, Point origin) {
-    CableTile cableTile = getTileAtPosition(tilePosition);
+    CableTile cableTile = gameState.getTileAtPosition(tilePosition);
     
     for (int i = 0; i < cableTile.getCables(); i++) {
       boolean second = i == 1;
@@ -179,19 +177,6 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     }
   }
   
-  private boolean isComponentTile(TilePosition tilePosition) {
-    return getTileAtPosition(tilePosition) instanceof ComponentTile;
-  }
-  
-  private boolean isCableTile(TilePosition tilePosition) {
-    return getTileAtPosition(tilePosition) instanceof CableTile;
-  }
-  
-  @SuppressWarnings("unchecked")
-  private <T extends Tile> T getTileAtPosition(TilePosition tilePosition) {
-    return (T) gameState.getBoard()[tilePosition.getRow()][tilePosition.getCol()];
-  }
-
   @Override
   public void paint(Image buffer) {
     // Draw actively to the graphics context of the canvas.
@@ -226,76 +211,30 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     }
   }
   
+  private void verifySolution() {
+    if (gameState.verifySolution()) {
+      JOptionPane.showMessageDialog(this, "This soluion is valid!", "Congratulations",
+          JOptionPane.INFORMATION_MESSAGE);
+    } else {
+      JOptionPane.showMessageDialog(this, "This soluion is not valid!", "Sorry",
+          JOptionPane.ERROR_MESSAGE);
+    }
+    displayVerificationResult = true;
+  }
+  
   private TilePosition getTilePosition(MouseEvent e) {
     return new TilePosition(e.getY() / TILE_SIZE, e.getX() / TILE_SIZE);
   }
   
-  private List<CableTile> getFullCable(TilePosition tilePosition) {
-    
-    final CableTile cableTile = getTileAtPosition(tilePosition);
-    if (cableTile.getCables() == 0) {
-      return Collections.emptyList();
-    }
-    
-    // look for the start in one direction
-    final List<Direction> directions = Direction.forOrientation(cableTile.getOrientation());
-    TilePosition start = tilePosition;
-    while (true) {
-      final TilePosition next = start.getAdjacent(directions.get(0));
-      if (!isCableTile(next)) { // this can't be out of bounds
-        break;
-      }
-      start = next;
-    }
-    
-    // add tiles in the other direction
-    final List<CableTile> fullCable = new ArrayList<>();
-    TilePosition current = start;
-    while (true) {
-      fullCable.add(getTileAtPosition(current));
-      final TilePosition next = current.getAdjacent(directions.get(1));
-      if (!isCableTile(next)) { // this can't be out of bounds
-        break;
-      }
-      current = next;
-    }
-    
-    return fullCable;
-  }
-  
-  private void tryToAddCableBetweenComponents(TilePosition component1, TilePosition component2) {
-    Direction relativeDirection = component1.getDirectionRelativeTo(component2);
-    if (relativeDirection == null) {
-      return;
-    }
-    
-    TilePosition current = component2.getAdjacent(relativeDirection);
-    List<CableTile> cableTiles = new ArrayList<>();
-    while (isCableTile(current)) {
-      CableTile cableTile = getTileAtPosition(current);
-      if (cableTile.getCables() == 2 || (cableTile.getCables() > 0 
-          && cableTile.getOrientation() != relativeDirection.getOrientation())) {
-        return; // there are already 2 cables or there is a crossing cable
-      }
-      cableTiles.add(cableTile);
-      current = current.getAdjacent(relativeDirection);
-    }
-    
-    cableTiles.forEach(cableTile -> {
-      cableTile.increaseCables();
-      cableTile.setOrientation(relativeDirection.getOrientation());
-    });
-  }
-
   @Override
   public void mouseClicked(MouseEvent e) {
     System.out.println("Clicked " + e.getPoint());
     
     TilePosition tilePosition = getTilePosition(e);
     
-    if (isCableTile(tilePosition)) {
+    if (gameState.isCableTile(tilePosition)) {
       if (selectedComponentPostion == null) {
-        getFullCable(tilePosition).forEach(CableTile::decreaseCables);
+        gameState.getFullCable(tilePosition).forEach(CableTile::decreaseCables);
       } else {
         // TODO
         selectedComponentPostion = null;
@@ -308,7 +247,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     } else if (tilePosition.equals(selectedComponentPostion)) {
       selectedComponentPostion = null;
     } else {
-      tryToAddCableBetweenComponents(tilePosition, selectedComponentPostion);
+      gameState.tryToAddCableBetweenComponents(tilePosition, selectedComponentPostion);
       selectedComponentPostion = null;
     }
   }
