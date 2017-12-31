@@ -28,7 +28,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   
   private static final int TILE_SIZE = 96;
   private static final int TILE_PADDING = 16;
-  private static final Color BACKGROUND_COLOR = new Color(89, 107, 68);
+  private static final Color BACKGROUND_COLOR = new Color(62, 75, 48);
   private static final Font DIGIT_FONT = new Font("Monospaced", Font.BOLD, 15);
   
   private JPanel canvas;
