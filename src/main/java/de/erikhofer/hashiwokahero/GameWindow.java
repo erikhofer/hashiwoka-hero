@@ -33,7 +33,9 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   private GameEngine gameEngine;
   private GameState gameState;
   private TilePosition selectedComponentPostion;
+  private TilePosition hoverTilePostion;
   private boolean displayVerificationResult;
+  private Point mousePosition;
   
   /**
    * Creates a new game window.
@@ -88,19 +90,41 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     g.setColor(BACKGROUND_COLOR);
     g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight()); // clear
     
-    for (int row = 0; row < gameState.getBoardHeight(); row++) {
-      for (int col = 0; col < gameState.getBoardWidth(); col++) {
-        
-        TilePosition tilePosition = new TilePosition(row, col);
-        final Point origin = new Point(col * TILE_SIZE, row * TILE_SIZE);
-        
-        if (gameState.isComponentTile(tilePosition)) {
-          renderComponentTile(tilePosition, g, origin);
-        } else if (gameState.isCableTile(tilePosition)) {
-          renderCableTile(tilePosition, g, origin);
-        } else {
-          throw new RuntimeException("Unknown tile type");
-        }
+    gameState.getAllTilePositions().stream().forEach(tilePosition -> {
+      final Point origin = new Point(tilePosition.getCol() * TILE_SIZE,
+          tilePosition.getRow() * TILE_SIZE);
+      
+      if (gameState.isComponentTile(tilePosition)) {
+        renderComponentTile(tilePosition, g, origin);
+      } else if (gameState.isCableTile(tilePosition)) {
+        renderCableTile(tilePosition, g, origin);
+      } else {
+        throw new RuntimeException("Unknown tile type");
+      }
+    });
+    
+    if (selectedComponentPostion != null) {
+      g.setColor(Color.RED);
+      g.drawLine(
+          selectedComponentPostion.getCol() * TILE_SIZE + TILE_SIZE / 2, 
+          selectedComponentPostion.getRow() * TILE_SIZE + TILE_SIZE / 2,
+          mousePosition.x, mousePosition.y);
+    }
+    if (hoverTilePostion != null) {
+      final Point hoverOrigin = new Point(hoverTilePostion.getCol() * TILE_SIZE,
+          hoverTilePostion.getRow() * TILE_SIZE);
+      if (gameState.isComponentTile(hoverTilePostion)) {
+        g.setColor(selectedComponentPostion == null
+            || selectedComponentPostion.getDirectionRelativeTo(hoverTilePostion) != null 
+            ? Color.GREEN : Color.RED);
+        g.drawOval(hoverOrigin.x + 20, hoverOrigin.y + 20, TILE_SIZE - 40, TILE_SIZE - 40);
+      } else if (selectedComponentPostion == null
+          && gameState.<CableTile>getTileAtPosition(hoverTilePostion).getCables() > 0) {
+        g.setColor(Color.RED);
+        g.drawLine(hoverOrigin.x + 15, hoverOrigin.y + 15,
+            hoverOrigin.x + TILE_SIZE - 15, hoverOrigin.y + TILE_SIZE - 15);
+        g.drawLine(hoverOrigin.x + TILE_SIZE - 15, hoverOrigin.y + 15,
+            hoverOrigin.x + 15, hoverOrigin.y + TILE_SIZE - 15);
       }
     }
   }
@@ -132,11 +156,6 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
             : Resources.HOLES.get(direction.getOrientation());
         g.drawImage(connectionImage, connectionOrigin.x, connectionOrigin.y, this);
       }
-    }
-    
-    if (tilePosition.equals(selectedComponentPostion)) {
-      g.setColor(Color.GREEN);
-      g.fillRect(origin.x + TILE_PADDING, origin.y + TILE_PADDING, 10, 10);
     }
     
     g.setColor(Color.WHITE);
@@ -228,15 +247,13 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   
   @Override
   public void mouseClicked(MouseEvent e) {
-    System.out.println("Clicked " + e.getPoint());
-    
+    displayVerificationResult = false;
     TilePosition tilePosition = getTilePosition(e);
     
     if (gameState.isCableTile(tilePosition)) {
       if (selectedComponentPostion == null) {
         gameState.getFullCable(tilePosition).forEach(CableTile::decreaseCables);
       } else {
-        // TODO
         selectedComponentPostion = null;
       }
       return;
@@ -258,9 +275,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   }
 
   @Override
-  public void mouseReleased(MouseEvent e) {
-    System.out.println("Released" + e.getPoint());
-  }
+  public void mouseReleased(MouseEvent e) {}
 
   @Override
   public void mouseEntered(MouseEvent e) {}
@@ -269,12 +284,12 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   public void mouseExited(MouseEvent e) {}
 
   @Override
-  public void mouseDragged(MouseEvent e) {
-    System.out.println("Dragged " + e.getPoint());
-  }
+  public void mouseDragged(MouseEvent e) {}
 
   @Override
   public void mouseMoved(MouseEvent e) {
     System.out.println("Moved " + e.getPoint());
+    mousePosition = e.getPoint();
+    hoverTilePostion = getTilePosition(e);
   }
 }
