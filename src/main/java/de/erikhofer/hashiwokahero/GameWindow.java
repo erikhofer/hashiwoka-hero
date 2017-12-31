@@ -1,6 +1,5 @@
 package de.erikhofer.hashiwokahero;
 
-import com.google.common.collect.ImmutableList;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,7 +25,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   private static final int TILE_SIZE = 96;
   private static final int TILE_PADDING = 16;
   private static final int TILE_INNER_SIZE = TILE_SIZE - 2 * TILE_PADDING;
-  private static final Color BACKGROUND_COLOR = new Color(62, 75, 48);
+  private static final Color BACKGROUND_COLOR = new Color(89, 107, 68);
   
   private JPanel canvas;
   private GameEngine gameEngine;

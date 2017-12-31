@@ -14,14 +14,14 @@ public class Resources {
    */
   public static final Image[][] COMPONENTS = new Image[][] {
     {}, // there is no component with 0 connections
-    { loadImage("1.png") },
-    { loadImage("2.png") },
-    { loadImage("2.png") },
-    { loadImage("4.png") },
-    { loadImage("5.png") },
-    { loadImage("6.png") },
-    { loadImage("7.png") },
-    { loadImage("8.png") }
+    { loadImage("component-1-red.png"), loadImage("component-1-black.png") },
+    { loadImage("component-2-off.png"), loadImage("component-2-on.png") },
+    { loadImage("component-3.png") },
+    { loadImage("component-4.png") },
+    { loadImage("component-5.png") },
+    { loadImage("component-6.png") },
+    { loadImage("component-7.png") },
+    { loadImage("component-8.png") }
   };
   
   /**
@@ -46,8 +46,8 @@ public class Resources {
    * Image resources for cable tiles. Dimension 1 = variant.
    */
   public static final ImmutableMap<Orientation, Image[]> CABLES = ImmutableMap.of(
-      Orientation.HORIZONTAL, new Image[] { loadImage("cable-h.png") },
-      Orientation.VERTICAL, new Image[] { loadImage("cable-v.png") }
+      Orientation.HORIZONTAL, new Image[] { loadImage("cable-h-yellow.png") },
+      Orientation.VERTICAL, new Image[] { loadImage("cable-v-yellow.png") }
   );
   
   private static Image loadImage(String fileName) {
