@@ -24,8 +24,10 @@ public class GameState {
     this.solution = solution;
     boardHeight = solution.length;
     boardWidth = solution[0].length;
-    
-    // create a copy of the solution and remove all cables
+    setBoardToSolution(true);
+  }
+  
+  private void setBoardToSolution(boolean removeCables) {
     board = new Tile[boardHeight][boardWidth]; 
     for (int row = 0; row < boardHeight; row++) {
       for (int col = 0; col < boardWidth; col++) {
@@ -34,7 +36,9 @@ public class GameState {
           board[row][col] = new ComponentTile((ComponentTile) solutionTile);
         } else if (solutionTile instanceof CableTile) {
           CableTile boardTile = new CableTile((CableTile) solutionTile);
-          boardTile.setCables(0);
+          if (removeCables) {
+            boardTile.setCables(0);
+          }
           board[row][col] = boardTile;
         } else {
           throw new RuntimeException("Unknown tile type!");
@@ -44,6 +48,6 @@ public class GameState {
   }
   
   public void setBoardToSolution() {
-    board = solution;
+    setBoardToSolution(false);
   }
 }

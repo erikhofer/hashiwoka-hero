@@ -5,7 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -17,10 +17,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseListener, MouseMotionListener {
+public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseListener,
+    MouseMotionListener {
 
   private static final long serialVersionUID = 1L;
   
@@ -54,13 +56,23 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     final int canvasWidth = gameState.getBoardWidth() * TILE_SIZE;
     final int canvasHeight = gameState.getBoardHeight() * TILE_SIZE;
     
-    //set up canvas
+    // set up canvas
     canvas = new JPanel();
     canvas.setPreferredSize(new Dimension(canvasWidth, canvasHeight));
     canvas.setDoubleBuffered(false); // we do our own double buffering
     canvas.addMouseListener(this);
     canvas.addMouseMotionListener(this);
     add(canvas, BorderLayout.CENTER);
+    
+    // set up controls
+    JPanel controlPanel = new JPanel();
+    controlPanel.setLayout(new GridLayout(1, 2));
+    JButton verifySolutionButton = new JButton("Verify Solution");
+    controlPanel.add(verifySolutionButton);
+    JButton showSolutionButton = new JButton("Show Solution");
+    showSolutionButton.addActionListener(e -> gameState.setBoardToSolution());
+    controlPanel.add(showSolutionButton);
+    add(controlPanel, BorderLayout.SOUTH);
     
     gameEngine = new GameEngine(this);
     gameEngine.setBufferSize(canvasWidth, canvasHeight);
@@ -134,7 +146,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     g.fillOval(origin.x + TILE_PADDING + 2, origin.y + TILE_PADDING + 2, 15, 15);
     g.setColor(Color.black);
     g.setFont(DIGIT_FONT);
-    g.drawString(""+componentTile.getConnections(), origin.x + TILE_PADDING + 5, 
+    g.drawString("" + componentTile.getConnections(), origin.x + TILE_PADDING + 5, 
         origin.y + TILE_PADDING + 15);
   }
   
