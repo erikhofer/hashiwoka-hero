@@ -35,13 +35,13 @@ public class Resources {
   };
   
   /**
-   * Image resources for connected cables for each direction. Dimension 1 = variant.
+   * Image resources for connected cables for each direction.
    */
-  public static final ImmutableMap<Direction, Image[]> CONNECTIONS = ImmutableMap.of(
-      Direction.NORTH, new Image[] { loadImage("hole-n.png") },
-      Direction.EAST, new Image[] { loadImage("hole-e.png") },
-      Direction.SOUTH, new Image[] { loadImage("hole-s.png") },
-      Direction.WEST, new Image[] { loadImage("hole-w.png") }
+  public static final ImmutableMap<Direction, Image> CONNECTIONS = ImmutableMap.of(
+      Direction.NORTH, loadImage("hole-n.png"),
+      Direction.EAST, loadImage("hole-e.png"),
+      Direction.SOUTH, loadImage("hole-s.png"),
+      Direction.WEST, loadImage("hole-w.png")
   );
   
   /**
@@ -72,11 +72,11 @@ public class Resources {
       }
   );
   
-  public static int getNumberOfCableVariations() {
+  public static int getNumberOfCableVariants() {
     return CABLES.get(Orientation.HORIZONTAL).length;
   }
   
-  public static int getNumberOfComponentVariations(int connections) {
+  public static int getNumberOfComponentVariants(int connections) {
     return COMPONENTS[connections].length;
   }
   

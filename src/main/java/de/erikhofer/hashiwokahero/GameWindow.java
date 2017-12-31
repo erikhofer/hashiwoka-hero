@@ -128,7 +128,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
       for (int i = 1; i <= 2; i++) {
         Point connectionOrigin = getConnectionOrigin(origin, direction, i == 2);
         Image connectionImage = connectionCount >= i 
-            ? Resources.CONNECTIONS.get(direction)[cableTile.getVariant()] 
+            ? Resources.CONNECTIONS.get(direction)
             : Resources.HOLES.get(direction.getOrientation());
         g.drawImage(connectionImage, connectionOrigin.x, connectionOrigin.y, this);
       }

@@ -102,8 +102,9 @@ public class BoardGenerator {
           }
           
           // Place new cables.
-          newCablePositions.forEach(position -> 
-              board.put(position, new CableTile(newCableCount, direction.getOrientation())));
+          final int randomVariant = random.nextInt(Resources.getNumberOfCableVariants());
+          newCablePositions.forEach(position -> board.put(position,
+              new CableTile(newCableCount, direction.getOrientation(), randomVariant)));
           
           // Place new component.
           final int connections = getAdjacentCableCount(newComponentPosition, board);
@@ -119,7 +120,7 @@ public class BoardGenerator {
       }
     }
     
-    randomizeVariants(board);
+    randomizeComponentVariants(board);
     return transformBoard(board);
   }
   
@@ -171,7 +172,7 @@ public class BoardGenerator {
     return transformedBoard;
   }
   
-  private void randomizeVariants(Map<TilePosition, Tile> board) {
+  private void randomizeComponentVariants(Map<TilePosition, Tile> board) {
     boolean usedNegativePole = false;
     boolean usedPositivePole = false;
     
@@ -200,7 +201,7 @@ public class BoardGenerator {
               ? Resources.VARIANT_2_GREEN_OFF : Resources.VARIANT_2_RED_OFF);
           break;
         default:
-          tile.setVariant(random.nextInt(Resources.getNumberOfComponentVariations(connections)));
+          tile.setVariant(random.nextInt(Resources.getNumberOfComponentVariants(connections)));
       }
     }
   }

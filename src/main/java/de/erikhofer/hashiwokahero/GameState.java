@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import lombok.Getter;
 
 public class GameState {
@@ -13,7 +14,7 @@ public class GameState {
   private final @Getter int boardWidth;
   private final @Getter int boardHeight;
   private final @Getter ImmutableList<TilePosition> allTilePositions;
-  private @Getter boolean gameOver;
+  private final Random random = new Random();
   
   /**
    * Creates a game state with a randomly generated board with the given number of components.
@@ -149,7 +150,12 @@ public class GameState {
       current = current.getAdjacent(relativeDirection);
     }
     
+    final int randomVariant = random.nextInt(Resources.getNumberOfCableVariants());
+    
     cableTiles.forEach(cableTile -> {
+      if (cableTile.getCables() == 0) {
+        cableTile.setVariant(randomVariant);
+      }
       cableTile.increaseCables();
       cableTile.setOrientation(relativeDirection.getOrientation());
     });

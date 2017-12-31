@@ -16,9 +16,13 @@ public class CableTile extends Tile {
   
   public CableTile() {}
   
-  public CableTile(int cables, Orientation orientation) {
+  /**
+   * Creates a new cable tile with the given initial values.
+   */
+  public CableTile(int cables, Orientation orientation, int variant) {
     setCables(cables);
     setOrientation(orientation);
+    setVariant(variant);
   }
   
   /**
