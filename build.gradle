@@ -35,9 +35,9 @@ task fatJar(type: Jar) {
   manifest {
     attributes 'Implementation-Title': 'Hashiwoka Hero',
                'Implementation-Version': version,
-               'Main-Class': 'de.erikhofer.hashiwokahero.gui.GameWindow'
+               'Main-Class': 'de.erikhofer.hashiwokahero.SettingsWindow'
   }
-  baseName = project.name + '-all'
+  baseName = project.name + '-standalone'
   from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
   with jar
 }
