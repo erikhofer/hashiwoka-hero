@@ -13,7 +13,9 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -26,10 +28,6 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   private static final int TILE_INNER_SIZE = TILE_SIZE - 2 * TILE_PADDING;
   private static final Color BACKGROUND_COLOR = new Color(62, 75, 48);
   
-  public static void main(String[] args) {
-    new GameWindow();
-  }
-  
   private JPanel canvas;
   private GameEngine gameEngine;
   private GameState gameState;
@@ -38,19 +36,19 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   /**
    * Creates a new game window.
    */
-  public GameWindow() {
+  public GameWindow(int components, Consumer<GameWindow> closeHandler) {
     setTitle("Hashiwoka Hero");
     setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing(WindowEvent e) {
-        System.exit(0);
+        closeHandler.accept(GameWindow.this);
       }
     });
     setResizable(false);
     setLayout(new BorderLayout());
     
-    gameState = new GameState(10);
+    gameState = new GameState(components);
     
     final int canvasWidth = gameState.getBoardWidth() * TILE_SIZE;
     final int canvasHeight = gameState.getBoardHeight() * TILE_SIZE;
@@ -65,11 +63,6 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     
     gameEngine = new GameEngine(this);
     gameEngine.setBufferSize(canvasWidth, canvasHeight);
-    gameEngine.start();
-    
-    pack();
-    setLocationRelativeTo(null); // center
-    setVisible(true);
   }
 
   @Override
@@ -204,15 +197,27 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     gameEngine.stop();
   }
   
+  @Override
+  public void setVisible(boolean b) {
+    super.setVisible(b);
+    if (b) {
+      gameEngine.start();
+      pack();
+      setLocationRelativeTo(null); // center
+    } else {
+      gameEngine.stop();
+    }
+  }
+  
   private TilePosition getTilePosition(MouseEvent e) {
     return new TilePosition(e.getY() / TILE_SIZE, e.getX() / TILE_SIZE);
   }
   
-  private ImmutableList<CableTile> getFullCable(TilePosition tilePosition) {
+  private List<CableTile> getFullCable(TilePosition tilePosition) {
     
     final CableTile cableTile = getTileAtPosition(tilePosition);
     if (cableTile.getCables() == 0) {
-      return ImmutableList.of();
+      return Collections.emptyList();
     }
     
     // look for the start in one direction
@@ -227,10 +232,10 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
     }
     
     // add tiles in the other direction
-    final ImmutableList.Builder<CableTile> builder = ImmutableList.builder();
+    final List<CableTile> fullCable = new ArrayList<>();
     TilePosition current = start;
     while (true) {
-      builder.add(getTileAtPosition(current));
+      fullCable.add(getTileAtPosition(current));
       final TilePosition next = current.getAdjacent(directions.get(1));
       if (!isCableTile(next)) { // this can't be out of bounds
         break;
@@ -238,7 +243,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
       current = next;
     }
     
-    return builder.build();
+    return fullCable;
   }
   
   private void tryToAddCableBetweenComponents(TilePosition component1, TilePosition component2) {

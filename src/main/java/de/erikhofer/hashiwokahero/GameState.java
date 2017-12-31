@@ -10,10 +10,16 @@ public class GameState {
   private final @Getter int boardHeight;
   private @Getter boolean gameOver;
   
+  /**
+   * Creates a game state with a randomly generated board with the given number of components.
+   */
   public GameState(int components) {
     this(new BoardGenerator().generateBoard(components));
   }
   
+  /**
+   * Creates a new game state based on the given solution.
+   */
   public GameState(Tile[][] solution) {
     this.solution = solution;
     boardHeight = solution.length;

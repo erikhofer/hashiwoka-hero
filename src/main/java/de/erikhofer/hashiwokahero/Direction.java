@@ -26,7 +26,6 @@ public enum Direction {
     return builder.build();
   }
   
-  @Getter
-  private final Orientation orientation;
+  private final @Getter Orientation orientation;
 
 }

@@ -15,6 +15,10 @@ import lombok.Getter;
 
 public class BoardGenerator {
   
+  /**
+   * Every cable is at least 1 tile long. Every subsequent tile is used with this probability (if
+   * possible).
+   */
   private static final double CONTINUE_CABLE_PROBABILITY = 0.3;
   
   private final @Getter long seed;
@@ -119,6 +123,9 @@ public class BoardGenerator {
   }
   
   private boolean isComponentPlacableAt(TilePosition tilePosition, Map<TilePosition, Tile> board) {
+    if (board.get(tilePosition) instanceof ComponentTile) {
+      return false; // There already is a component on this tile.
+    }
     for (Direction direction: Direction.values()) {
       Tile adjacentTile = board.get(tilePosition.getAdjacent(direction));
       if (adjacentTile instanceof ComponentTile) {
