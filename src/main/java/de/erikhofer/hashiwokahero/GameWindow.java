@@ -3,7 +3,9 @@ package de.erikhofer.hashiwokahero;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -24,8 +26,8 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   
   private static final int TILE_SIZE = 96;
   private static final int TILE_PADDING = 16;
-  private static final int TILE_INNER_SIZE = TILE_SIZE - 2 * TILE_PADDING;
   private static final Color BACKGROUND_COLOR = new Color(89, 107, 68);
+  private static final Font DIGIT_FONT = new Font("Monospaced", Font.BOLD, 15);
   
   private JPanel canvas;
   private GameEngine gameEngine;
@@ -128,8 +130,12 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
       g.fillRect(origin.x + TILE_PADDING, origin.y + TILE_PADDING, 10, 10);
     }
     
-    g.setColor(Color.RED);
-    g.drawString(""+componentTile.getConnections(), origin.x + TILE_PADDING + 15, origin.y + TILE_PADDING + 10);
+    g.setColor(Color.WHITE);
+    g.fillOval(origin.x + TILE_PADDING + 2, origin.y + TILE_PADDING + 2, 15, 15);
+    g.setColor(Color.black);
+    g.setFont(DIGIT_FONT);
+    g.drawString(""+componentTile.getConnections(), origin.x + TILE_PADDING + 5, 
+        origin.y + TILE_PADDING + 15);
   }
   
   private Point getConnectionOrigin(Point tileOrigin, Direction direction, boolean second) {
@@ -320,5 +326,4 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   public void mouseMoved(MouseEvent e) {
     System.out.println("Moved " + e.getPoint());
   }
-
 }
