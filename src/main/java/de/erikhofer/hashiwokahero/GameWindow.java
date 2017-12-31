@@ -270,9 +270,7 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
   }
 
   @Override
-  public void mousePressed(MouseEvent e) {
-    System.out.println("Pressed " + e.getPoint());
-  }
+  public void mousePressed(MouseEvent e) {}
 
   @Override
   public void mouseReleased(MouseEvent e) {}
@@ -288,7 +286,6 @@ public class GameWindow extends JFrame implements GameEngine.MainLoop, MouseList
 
   @Override
   public void mouseMoved(MouseEvent e) {
-    System.out.println("Moved " + e.getPoint());
     mousePosition = e.getPoint();
     hoverTilePostion = getTilePosition(e);
   }
