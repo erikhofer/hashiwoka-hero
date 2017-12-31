@@ -119,6 +119,7 @@ public class BoardGenerator {
       }
     }
     
+    randomizeVariants(board);
     return transformBoard(board);
   }
   
@@ -168,6 +169,40 @@ public class BoardGenerator {
     }
     
     return transformedBoard;
+  }
+  
+  private void randomizeVariants(Map<TilePosition, Tile> board) {
+    boolean usedNegativePole = false;
+    boolean usedPositivePole = false;
+    
+    
+    for (Tile tile: board.values()) {
+      if (!(tile instanceof ComponentTile)) {
+        continue;
+      }
+        
+      final int connections = ((ComponentTile) tile).getConnections();
+
+      switch (connections) {
+        case 1:
+          if (!usedNegativePole) {
+            tile.setVariant(Resources.VARIANT_1_NEGATIVE);
+            usedNegativePole = true;
+          } else if (!usedPositivePole) {
+            tile.setVariant(Resources.VARIANT_1_POSITIVE);
+            usedPositivePole = true;
+          } else {
+            tile.setVariant(Resources.VARIANT_1_MISC);
+          }
+          break;
+        case 2:
+          tile.setVariant(random.nextBoolean() 
+              ? Resources.VARIANT_2_GREEN_OFF : Resources.VARIANT_2_RED_OFF);
+          break;
+        default:
+          tile.setVariant(random.nextInt(Resources.getNumberOfComponentVariations(connections)));
+      }
+    }
   }
 
 }
